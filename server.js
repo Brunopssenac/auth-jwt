@@ -8,4 +8,9 @@ const PORT = process.env.PORT;
 const SECRET = process.env.SECRET;
 app.use(express.json());
 
+app.post("login", (req, res) => {
+const { username, password }  = req.body;
+const usuario = usuarios.find()
+
+});
 

@@ -27,6 +27,46 @@ app.post("/login", (req, res) => {
   }
 });
 
+// Middleware é uma função que tem acesso ao objeto de requisição (req), ao objetivo de resposta (res)
+// e á proxima função de middleware no ciclo de requisição-resposta da aplicação
+const authenticateToken = (req, res, next) => {
+const token = req.headers["authorization"];
+
+if(!token) {
+  return res.status(401).json({ message: "token não fornecido" });
+}
+
+// 401 = não autorizado
+jwt.verify(token, SECRET_KEY, (err, user) => {
+  if (err) {
+ return res.status(403).json({ message: "token inválido"});
+ // 403 = proibido
+  }
+
+   req.user = user;
+   console.log(`Usuário autenticado: ${user}`);
+ next(); // Nunca será executado
+});
+};
+
+app.get("/protected", authenticateToken, (req, res) => { 
+res.status(200).json({ message: "Acesso concedido a rota protegida"});
+});
+
+app.get("/admin", authenticateToken, (req, res) => {
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ message: "Acesso negado" });
+  }
+  res.status(200).json({ message: "Área do administrador" });
+});
+
+app.get("/owner", authenticateToken, (req, res) => {
+  if (req.user.role !== "owner") {
+    return res.status(403).json({ message: "Acesso negado" });
+  }
+  res.status(200).json({ message: "Área do Usuário Master" });
+});
+
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
